@@ -1,26 +1,44 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 )
 
-func rootHandler (w http.ResponseWriter, r *http.Request){
-	fmt.Fprintf(w, "🌱\n")
+type user struct {
+	UserName string `json:"name"`
+	Email    string `json:"email"`
+}
+
+var usuarios = map[string]int{
+	"Youstark":  1,
+	"Alejandro": 2,
+	"Ethien":    3,
+	"Edgar":     4,
 }
 
 func main() {
-	port:= ":3000"
+	port := ":3000"
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", rootHandler)
-	mux.HandleFunc("/borrego", func(w http.ResponseWriter, r *http.Request){
-		fmt.Fprintf(w, "Borrego Viudo 🐏\n")
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			var u user
+			err := json.NewDecoder(r.Body).Decode(&u)
+			if err != nil {
+				log.Fatal(err)
+			}
+			// fmt.Fprintf(w, "Id de usuario: %d\n", usuarios["Edgar"])
+			fmt.Fprintf(w, "Id de usuario: %d\n", usuarios[u.UserName])
+		}
+
 	})
 
-	fmt.Printf("Server is running at %s 🚀",port)
+	fmt.Printf("Server is running at %s 🚀", port)
 	err := http.ListenAndServe(port, mux)
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
+
 }
