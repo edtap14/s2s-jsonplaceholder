@@ -29,8 +29,8 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			// fmt.Fprintf(w, "Id de usuario: %d\n", usuarios["Edgar"])
-			fmt.Fprintf(w, "Id de usuario: %d\n", usuarios[u.UserName])
+			result := fmt.Sprintf("https://jsonplaceholder.typicode.com/todos?userId=%d", usuarios[u.UserName])
+			fmt.Fprintf(w, "%s\n", result)
 		}
 
 	})
