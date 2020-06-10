@@ -10,6 +10,7 @@ import (
 type user struct {
 	UserName string `json:"name"`
 	Email    string `json:"email"`
+	Prettify bool   `json:"prettify,omitempty"`
 }
 type toDoList struct {
 	ID        int    `json:"id"`
@@ -48,15 +49,24 @@ func main() {
 				log.Fatal(err2)
 			}
 
-			// js, err := json.Marshal(toDo) // send json compressed
-			js, err := json.MarshalIndent(toDo, "", "\t")
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			if u.Prettify == false {
+				js, err := json.Marshal(toDo) // send json compressed
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				w.Header().Set("Content-Type", "application/json")
+				w.Write(js)
+			} else {
+				js, err := json.MarshalIndent(toDo, "", "\t")
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
 
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(js)
+				w.Header().Set("Content-Type", "application/json")
+				w.Write(js)
+			}
 
 		}
 
