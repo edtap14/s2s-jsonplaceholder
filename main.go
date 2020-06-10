@@ -11,6 +11,12 @@ type user struct {
 	UserName string `json:"name"`
 	Email    string `json:"email"`
 }
+type toDoList struct {
+	ID        int    `json:"id"`
+	UserID    int    `json:"userId"`
+	Title     string `json:"title"`
+	Completed bool   `json:"completed"`
+}
 
 var usuarios = map[string]int{
 	"Youstark":  1,
@@ -29,13 +35,33 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			result := fmt.Sprintf("https://jsonplaceholder.typicode.com/todos?userId=%d", usuarios[u.UserName])
-			fmt.Fprintf(w, "%s\n", result)
+
+			//Obtención de tareas
+			res, err := http.Get(fmt.Sprintf("https://jsonplaceholder.typicode.com/todos?userId=%d", usuarios[u.UserName]))
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer res.Body.Close()
+			var toDo []toDoList
+			err2 := json.NewDecoder(res.Body).Decode(&toDo)
+			if err != nil {
+				log.Fatal(err2)
+			}
+
+			// js, err := json.Marshal(toDo) // send json compressed
+			js, err := json.MarshalIndent(toDo, "", "\t")
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(js)
+
 		}
 
 	})
-
-	fmt.Printf("Server is running at %s 🚀", port)
+	fmt.Printf("Server is running at %s 🚀 \n", port)
 	err := http.ListenAndServe(port, mux)
 	if err != nil {
 		log.Fatal(err)
